@@ -1,0 +1,54 @@
+﻿@using Microsoft.AspNetCore.SignalR.Client
+@inject SignalRService SignalRService
+@inject ILocalStorageService _localStorage
+@implements IAsyncDisposable
+
+
+Notifications:
+<ul id="messagesList">
+    @foreach (var message in messages)
+    {
+        <li>@message</li>
+    }
+</ul>
+
+
+@code {
+    private List<string> messages = new List<string>();
+    private string? messageInput;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // SignalRService.SetToken(await getSavedToken());
+        await SignalRService.StartConnectionAsync();
+
+        SignalRService.HubConnection.On<string>("ReceiveMessage", (message) =>
+        {
+            var encodedMsg = $"{message}";
+            messages.Add(encodedMsg);
+            InvokeAsync(StateHasChanged);
+        });
+    }
+
+    // protected override async Task OnInitializedAsync()
+    // {
+        
+    // }
+
+    public bool IsConnected =>
+        SignalRService.HubConnection?.State == HubConnectionState.Connected;
+
+    public async ValueTask DisposeAsync()
+    {
+        if (SignalRService.HubConnection is not null)
+        {
+            await SignalRService.HubConnection.DisposeAsync();
+        }
+    }
+
+    private async Task<string> getSavedToken()
+    {
+        var jwt = await _localStorage.GetItemAsStringAsync("token");
+        return jwt.Trim('"');
+    }
+}

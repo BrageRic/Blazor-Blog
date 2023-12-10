@@ -1,0 +1,73 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using ServerBlazor.Models.Entities
+@using ServerBlazor.Models
+@using System.Text.Json
+@using System.Text
+@using static System.Net.Mime.MediaTypeNames
+@inject IHttpClientFactory _clientFactory
+@inject IJSRuntime JSRuntime
+@inject ILocalStorageService _localStorage
+@inject NavigationManager _navigationManager
+
+ @page "/login"
+
+ <PageTitle>Login</PageTitle>
+
+ <h3>Login</h3>
+
+ <EditForm Model=@user>
+     <DataAnnotationsValidator />
+     <div class="form-group">
+         <label for="Username">Username</label>
+         <InputText @bind-Value=user.Username class="form-control" id="username" />
+     </div>
+     <div class="form-group">
+         <label for="Password">Password</label>
+         <InputText @bind-Value=user.Password type="password" class="form-control" id="password" />
+     </div>
+     <input @onclick="TryLogin" type="submit" class="btn btn-primary" value="Login" />
+ </EditForm>
+ <p>@user.Username @user.Password</p>
+
+@code {
+    BlogUser user = new BlogUser();
+    private bool hasRendered = false;
+
+    private async Task TryLogin()
+    {
+        if (!hasRendered)
+            return;
+
+        var client = _clientFactory.CreateClient("ApiClient");
+        var todoJson = new StringContent(
+            JsonSerializer.Serialize(user),
+            Encoding.UTF8,
+            Application.Json);
+
+        using var httpResponseMessage = await client.PostAsync("api/Account/verifyLogin", todoJson);
+        var responseContent = await httpResponseMessage.Content.ReadAsStringAsync();
+        await JSRuntime.InvokeVoidAsync("console.log", $"Response Content: {responseContent}"); 
+        await JSRuntime.InvokeVoidAsync("console.log", $"Http Response: {httpResponseMessage}"); 
+
+        if (httpResponseMessage.IsSuccessStatusCode)
+        {
+            await _localStorage.SetItemAsync("token", responseContent);
+            StateHasChanged();
+            // _navigationManager.NavigateTo("", true);
+        }
+     }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            hasRendered = true;
+            StateHasChanged();
+        }
+    }
+
+    private async Task<string> getSavedToken()
+    {
+        return await _localStorage.GetItemAsStringAsync("token");
+    }
+ }

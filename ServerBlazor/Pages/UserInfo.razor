@@ -1,0 +1,58 @@
+﻿@using System.Security.Claims
+@using static System.Security.Claims.ClaimTypes
+
+@inject IJSRuntime JSRuntime
+@page "/user-info"
+
+<h3>User Information</h3>
+
+@*@if (User != null)
+{
+    <p>Username: @User.FindFirst(ClaimTypes.Name)?.Value</p>
+    <p>Username: @User.FindFirstValue(ClaimTypes.Name)</p>
+}
+else
+{
+    <p>User not authenticated</p>
+}*@
+
+<p>@authMessage</p>
+
+<AuthorizeView>
+    <Authorized>
+        @context.User.Identity.Name
+    </Authorized>
+    <NotAuthorized>
+        ikek 
+    </NotAuthorized>
+
+</AuthorizeView>
+
+@code {
+    // private ClaimsPrincipal User { get; set; }
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationState { get; set; }
+    private bool hasRendered = false;
+    private string authMessage = "The user is NOT authenticated.";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await authenticationState;
+        // var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState?.User;
+        authMessage = user.Identity.Name;
+    }
+
+    // protected override async Task OnAfterRenderAsync(bool firstRender)
+    // {
+    //     hasRendered = true;
+    //     Debugging statements
+    //     await JSRuntime.InvokeVoidAsync("console.log", $"IsAuthenticated: {User.Identity.IsAuthenticated}");
+
+    //     foreach (var claim in User.Claims)
+    //     {
+    //         await JSRuntime.InvokeVoidAsync("console.log", $"Claim Type: {claim.Type}, Claim Value: {claim.Value}");
+    //     }
+    // }
+
+}
