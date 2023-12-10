@@ -1,0 +1,63 @@
+﻿@using System.IdentityModel.Tokens.Jwt
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.IdentityModel.Tokens
+@using ServerBlazor.Models
+@using System.Text
+@inject IConfiguration _conf
+@page "/profile"
+
+<AuthorizeView>
+    <Authorized>
+        <h3>Profile for @context.User.Identity.Name</h3>
+        <hr>
+        <button @onclick="GenerateJwtToken">Retrieve Web Token</button>
+        <div style="width: 30%; word-wrap: break-word;">
+            @jwt
+        </div>
+        <NavLink class="nav-link" href="Identity/Account/Logout">
+            <span class="oi oi-account-logout" aria-hidden="true">Log out</span>
+        </NavLink>
+    </Authorized>
+    <NotAuthorized>
+        You must log in to see this page
+    </NotAuthorized>
+</AuthorizeView>
+
+
+
+@code {
+    private string? jwt;
+    private ClaimsPrincipal? user;
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await authenticationState;
+        user = authState?.User;
+    }
+
+    private void GenerateJwtToken()
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var confKey = _conf.GetSection("TokenSettings")["SecretKey"];
+        var key = Encoding.ASCII.GetBytes(confKey);
+        var cIdentity = new ClaimsIdentity(new Claim[]
+            {
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                    new Claim(ClaimTypes.Name, user.Identity.Name),
+            });
+
+        var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = cIdentity,
+                Expires = DateTime.UtcNow.AddHours(3),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
+            };
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        var tokenString = tokenHandler.WriteToken(token);
+
+        jwt = tokenString;
+    }
+}

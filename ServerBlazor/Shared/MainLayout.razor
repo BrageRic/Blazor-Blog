@@ -9,7 +9,19 @@
 
     <main>
         <div class="top-row px-4">
-            <Identities />
+            <AuthorizeView>
+                <Authorized>
+                    <NavLink class="nav-link" href="profile">
+                        <span class="oi oi-home" aria-hidden="true"></span> Profile
+                    </NavLink>
+                </Authorized>
+                <NotAuthorized>
+                    <NavLink class="nav-link" href="Identity/Account/Login">
+                        <span class="oi oi-account-login" aria-hidden="true"></span> Login
+                    </NavLink>
+                </NotAuthorized>
+            </AuthorizeView>
+            
             <Notifications />
         </div>
 
