@@ -37,6 +37,11 @@ namespace ServerBlazor.Models
             return _db.Post.Where(x => x.Owner.Id == userId).ToList();
         }
 
+        public IEnumerable<Post> GetPostsByBlogId(int blogId)
+        {
+            return _db.Post.Where(x => x.BlogId == blogId).ToList();
+        }
+
         public IEnumerable<Comment> GetCommentsByPost(int id)
         {
             return _db.Comment.Where(x => x.PostId == id).ToList();
@@ -87,7 +92,7 @@ namespace ServerBlazor.Models
             throw new NotImplementedException();
         }
 
-        private int BlogIdByUserId(string userId)
+        public int BlogIdByUserId(string userId)
         {
             return _db.Blog.Where(x => x.Owner.Id == userId).Select(x => x.BlogId).FirstOrDefault();
         }

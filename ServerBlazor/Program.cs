@@ -35,7 +35,6 @@ builder.Services.AddHttpClient("ApiClient", client =>
 });
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddTransient<IBlogRepository, BlogRepository>();
-builder.Services.AddTransient<IAccountRepository, AccountRepository>();
 builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddScoped<SignalRService>();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>

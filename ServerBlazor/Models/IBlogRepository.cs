@@ -9,6 +9,7 @@ namespace ServerBlazor.Models
         Post GetPost(int id);
         Blog GetBlog(int id);
         IEnumerable<Post> GetPostsByUsername(string username);
+        IEnumerable<Post> GetPostsByBlogId(int blogId);
         IEnumerable<Comment> GetCommentsByPost(int id);
         Task Create(Blog blog, IPrincipal principal);
         Task Create(Post post, IPrincipal principal);
@@ -17,6 +18,7 @@ namespace ServerBlazor.Models
         Task Create(Comment comment, IPrincipal principal);
         Task Update(Comment comment);
         Task Delete(Comment comment);
+        int BlogIdByUserId(string userId);
     }
 
 
