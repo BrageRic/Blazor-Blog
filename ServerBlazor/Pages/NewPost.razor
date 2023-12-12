@@ -1,0 +1,52 @@
+﻿@using ServerBlazor.Models
+@using ServerBlazor.Models.Entities
+@using System.Security.Claims
+@inject IBlogRepository _repo
+@inject IMySharedService MySharedService
+
+<EditForm Model=@newPost OnValidSubmit=@OnSubmit>
+    <DataAnnotationsValidator />
+    <div class="form-group">
+        <label for="Title">Title</label>
+        <InputText @bind-Value=newPost.Title class="form-control" id="Title" />
+    </div>
+    <div class="form-group">
+        <label for="Content">Content</label>
+        <InputTextArea @bind-Value=newPost.Content class="form-control" id="Content" />
+    </div>
+    @*<div class="form-group">
+        <label for="Tags">Tags</label>
+        <InputText @bind-Value=newPost.Tags class="form-control" id="Tags" />
+    </div>*@
+    <input type="submit" class="btn btn-primary" value="Save" />
+</EditForm>
+
+@code {
+    PostDTO newPost = new PostDTO();
+    [CascadingParameter(Name="Posts")]
+    private IEnumerable<Post>? Posts { get; set; }
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationState { get; set; }
+    private ClaimsPrincipal? user;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        var authState = await authenticationState;
+        user = authState?.User;
+    }
+
+    async Task OnSubmit()
+    {
+        var blogId = _repo.BlogIdByUserId(user.Claims.FirstOrDefault().Value);
+        var post = new Post()
+        {
+            Title = newPost.Title,
+            Content = newPost.Content,
+            BlogId = blogId
+        };
+        await _repo.Create(post, user); 
+        Posts = _repo.GetPostsByBlogId(blogId);
+        MySharedService.RequestRefresh();
+    }
+}

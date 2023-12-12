@@ -1,9 +1,19 @@
 ﻿@using ServerBlazor.Models
 @using ServerBlazor.Models.Entities
 @inject IBlogRepository _repo
+@inject IMySharedService MySharedService
 @page "/Blog/{BlogId:int}"
 
 <h3>BlogPage</h3>
+<hr>
+<button @onclick="HandlePostForm">@buttonName</button>
+@if (create)
+{
+    <CascadingValue Name="Posts" Value="Posts">
+        <NewPost />
+        <hr>
+    </CascadingValue>
+}
 
 @foreach (var post in Posts)
 {
@@ -14,13 +24,36 @@
     </div>
 }
 
+
 @code {
     [Parameter]
     public int BlogId { get; set; }
     private IEnumerable<Post>? Posts;
+    private bool create = false;
+    private string buttonName = "New Post";
 
     protected override async Task OnInitializedAsync()
     {
         Posts = _repo.GetPostsByBlogId(BlogId);
+        MySharedService.OnRefreshRequested += HandleRefreshRequested;
+    }
+
+    private void HandleRefreshRequested()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void HandlePostForm()
+    {
+        if (!create)
+        {
+            create = true;
+            buttonName = "Close";
+        }
+        else
+        {
+            create = false;
+            buttonName = "New Post";
+        }
     }
 }

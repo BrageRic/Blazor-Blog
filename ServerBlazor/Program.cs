@@ -37,6 +37,7 @@ builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddTransient<IBlogRepository, BlogRepository>();
 builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddScoped<SignalRService>();
+builder.Services.AddSingleton<IMySharedService, MySharedService>();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 //builder.Services.AddDefaultIdentity<IdentityUser>().AddEntityFrameworkStores<ApplicationDbContext>();

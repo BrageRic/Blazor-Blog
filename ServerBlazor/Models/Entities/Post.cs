@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
 
 namespace ServerBlazor.Models.Entities
 {
@@ -18,7 +19,9 @@ namespace ServerBlazor.Models.Entities
 
     public class PostDTO
     {
+        [Required]
         public string Title { get; set; }
+        [Required]
         public string Content { get; set; }
         public List<string> Tags { get; set; } = new ();
     }
