@@ -17,7 +17,7 @@ namespace ServerBlazor.Models
         Task DeletePost(int postId);
         Task CreateComment(Comment comment, IPrincipal principal);
         Task UpdateComment(Comment comment);
-        Task DeleteComment(Comment comment);
+        Task DeleteComment(int commentId);
         int BlogIdByUserId(string userId);
     }
 

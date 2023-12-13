@@ -82,3 +82,35 @@ a, .btn-link {
 .btn-danger.btnCommentDel {
     font-size: 0.8em;
 }
+
+.btnDelComment {
+    padding: 0 0.5rem;
+    margin: 0 0.5rem;
+    margin-top: 2px;
+    color: #dc3545;
+    text-decoration: none;
+    transition: color .15s ease-in-out;
+    cursor: pointer;
+}
+
+@media (prefers-reduced-motion:reduce) {
+    .btnDelComment {
+        transition: none
+    }
+}
+
+.btnDelComment:focus, .btnDelComment:hover {
+    color: #bb2d3b
+}
+
+.btnDelComment.disabled {
+    color: #bb2d3b;
+    pointer-events: none;
+    cursor: default
+}
+
+.commentSpan {
+    display: inline-flex;
+    align-items: center;
+    margin: 0.5rem 0;
+}

@@ -105,9 +105,11 @@ namespace ServerBlazor.Models
             throw new NotImplementedException();
         }
 
-        public async Task DeleteComment(Comment comment)
+        public async Task DeleteComment(int commentId)
         {
-            throw new NotImplementedException();
+            var c = await _db.Comment.FindAsync(commentId);
+            _db.Comment.Remove(c);
+            await _db.SaveChangesAsync();
         }
 
         public int BlogIdByUserId(string userId)
