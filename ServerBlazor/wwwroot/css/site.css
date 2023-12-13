@@ -62,3 +62,23 @@ a, .btn-link {
     .blazor-error-boundary::after {
         content: "An error has occurred."
     }
+
+.tag {
+    border: 2px solid black;
+    border-radius: 0.5em;
+    padding: 0.25em;
+    margin-right: 0.5em;
+}
+
+.btnCommentEdit {
+    font-size: 0.8em;
+    margin-left: 1em;
+}
+
+.nav-link.prof-link {
+    width: max-content;
+}
+
+.btn-danger.btnCommentDel {
+    font-size: 0.8em;
+}

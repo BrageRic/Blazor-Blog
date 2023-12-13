@@ -45,7 +45,7 @@
             Content = newPost.Content,
             BlogId = blogId
         };
-        await _repo.Create(post, user); 
+        await _repo.CreatePost(post, user); 
         Posts = _repo.GetPostsByBlogId(blogId);
         MySharedService.RequestRefresh();
     }

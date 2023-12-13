@@ -1,12 +1,126 @@
 ﻿@using ServerBlazor.Models
-@inject BlogRepository _repo
-@page "/posts"
+@using ServerBlazor.Models.Entities
+@inject IBlogRepository _repo
+@inject NavigationManager _navigation
+@page "/post/{PostId:int}"
 
-<PageTitle></PageTitle>
+<AuthorizeView>
+    <Authorized>
+        @if (@context.User.Claims.FirstOrDefault().Value == post.Owner.Id) {
+            <div>
+                <button @onclick="EditPostHandling">@editPostButtonName</button>
+                <button class="btn-danger" @onclick="@(e => DelPost(e, PostId))">Delete</button>
+            </div>
+            <hr>
+        }
+    </Authorized>
+    <NotAuthorized>
+
+    </NotAuthorized>
+</AuthorizeView>
+
+@if (post is not null)
+{
+    <div>
+        @if (editPost)
+        {
+            <EditForm Model=@post OnValidSubmit=@OnSubmit>
+                <DataAnnotationsValidator />
+                <div class="form-group">
+                    <InputText @bind-Value=post.Title class="form-control" id="Title" />
+                </div>
+                <div class="form-group">
+                    <InputTextArea @bind-Value=post.Content class="form-control" id="Content" rows="10" />
+                </div>
+                <input type="submit" class="btn btn-primary" value="Save" />
+            </EditForm>
+        } else
+        {
+            <h3>@post.Title</h3>
+            <p>@post.Content</p>
+        }
+
+        <span>
+            @foreach (var tag in post.Tags)
+            {
+                <b class="tag">@($"{tag.TagText} ")</b>
+            }
+        </span>
+    </div>
+    <hr>
+    <h5>Comments</h5>
+    @foreach (var comment in post.Comments)
+    {
+        <span>
+            <span class="oi oi-delete"></span>
+            <span id=@($"comment{comment.CommentId}")>
+                @($"{comment.Owner.UserName}: {comment.CommentText} ")
+            </span>
+
+            <AuthorizeView>
+                <Authorized>
+                    @if (@context.User.Claims.FirstOrDefault().Value == @comment.Owner.Id)
+                    {
+                        <button class="btnCommentEdit" @onclick="EditCommentHandling">Edit</button>
+                        <button class="btn-danger btnCommentDel">Delete</button>
+                    }
+                </Authorized>
+            </AuthorizeView>
+        </span>
+        <br>
+        <br>
+    }
+}
 
 @code {
+    [Parameter]
+    public int PostId { get; set; }
+    private bool editPost = false;
+    private bool editComment = false;
+    private string editPostButtonName = "Edit";
+    private Post? post { get; set; }
+    private PostDTO postDTO { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
-        
+        post = _repo.GetPost(PostId);
+    }
+
+    private void EditPostHandling()
+    {
+        if (!editPost)
+        {
+            editPost = true;
+            editPostButtonName = "Cancel";
+        } else
+        {
+            editPost = false;
+            editPostButtonName = "Edit";
+        }
+    }
+
+    private void EditCommentHandling()
+    {
+        if (!editComment)
+        {
+            editComment = true;
+        } else
+        {
+            editComment = false;
+        }
+    }
+
+    private async Task OnSubmit()
+    {
+        await _repo.Update(PostId, post);
+        editPost = false;
+        editPostButtonName = "Edit";
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task DelPost(MouseEventArgs e, int postId)
+    {
+        await _repo.DeletePost(postId);
+        _navigation.NavigateTo("/Blog/" + post.BlogId);
     }
 }

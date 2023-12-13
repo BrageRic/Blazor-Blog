@@ -119,7 +119,7 @@ namespace ServerBlazor.Server.Controllers
                 return NotFound();
             }
             comment.PostId = id;
-            await _repository.Create(comment, User);
+            await _repository.CreateComment(comment, User);
 
             return CreatedAtAction("GetComments", new { id }, comment);
         }
@@ -129,7 +129,7 @@ namespace ServerBlazor.Server.Controllers
         [HttpPost("newPost")]
         public async Task<IActionResult> NewPost([FromBody][Bind("Title,Content")] Post post)
         {
-            await _repository.Create(post, User);
+            await _repository.CreatePost(post, User);
 
             return CreatedAtAction("GetPost", new { id = post.PostId }, post);
         }
@@ -138,7 +138,7 @@ namespace ServerBlazor.Server.Controllers
         [HttpPost("initializeBlog")] // midlertidig. skal bli private
         public async Task<IActionResult> InitilizeBlog([FromBody][Bind("Name")] Blog blog)
         {
-            await _repository.Create(blog, User);
+            await _repository.CreateBlog(blog, User);
 
             return CreatedAtAction("GetBlog", new { id = blog.BlogId }, blog);
         }

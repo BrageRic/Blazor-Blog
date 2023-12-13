@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Principal;
 using System.Reflection.Metadata;
 using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ServerBlazor.Models
 {
@@ -21,7 +22,11 @@ namespace ServerBlazor.Models
 
         public Post GetPost(int id)
         {
-            var p = _db.Post.Find(id);
+            var p = _db.Post.Where(x => x.PostId == id)
+                .Include(x => x.Owner)
+                .Include(x => x.Tags)
+                .Include(x => x.Comments)
+                .FirstOrDefault();
             return p;
         }
 
@@ -47,7 +52,7 @@ namespace ServerBlazor.Models
             return _db.Comment.Where(x => x.PostId == id).ToList();
         }
 
-        public async Task Create(Blog blog, IPrincipal principal)
+        public async Task CreateBlog(Blog blog, IPrincipal principal)
         {
             var currentUser = await _manager.FindByNameAsync(principal.Identity.Name);
             blog.Owner = currentUser;
@@ -55,7 +60,7 @@ namespace ServerBlazor.Models
             await _db.SaveChangesAsync();
         }
 
-        public async Task Create(Post post, IPrincipal principal)
+        public async Task CreatePost(Post post, IPrincipal principal)
         {
             var currentUser = await _manager.FindByNameAsync(principal.Identity.Name);
             post.Owner = currentUser;
@@ -64,17 +69,24 @@ namespace ServerBlazor.Models
             await _db.SaveChangesAsync();
         }
 
-        public async Task Update(Post post)
+        public async Task Update(int id, Post post)
         {
-            throw new NotImplementedException();
+            var p = _db.Post.Find(id);
+            p.Title = post.Title;
+            p.Content = post.Content;
+            p.Tags = post.Tags;
+            _db.Post.Update(p);
+            await _db.SaveChangesAsync();
         }
 
-        public async Task Delete(Post post)
+        public async Task DeletePost(int postId)
         {
-            throw new NotImplementedException();
+            var p = _db.Post.Find(postId);
+            _db.Post.Remove(p);
+            await _db.SaveChangesAsync();
         }
 
-        public async Task Create(Comment comment, IPrincipal principal)
+        public async Task CreateComment(Comment comment, IPrincipal principal)
         {
             var currentUser = await _manager.FindByNameAsync(principal.Identity.Name);
             comment.Owner = currentUser;
@@ -82,12 +94,12 @@ namespace ServerBlazor.Models
             await _db.SaveChangesAsync();
         }
 
-        public async Task Update(Comment comment)
+        public async Task UpdateComment(Comment comment)
         {
             throw new NotImplementedException();
         }
 
-        public async Task Delete(Comment comment)
+        public async Task DeleteComment(Comment comment)
         {
             throw new NotImplementedException();
         }

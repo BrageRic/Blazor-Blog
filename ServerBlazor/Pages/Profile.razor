@@ -12,14 +12,14 @@
     <Authorized>
         <h3>Profile for @context.User.Identity.Name</h3>
         <hr>
-        <NavLink class="nav-link" href="@blogURI">
+        <NavLink class="nav-link prof-link" href="@blogURI">
             <span class="oi oi-book" aria-hidden="true"></span> Blog page
         </NavLink>
         <button @onclick="GenerateJwtToken">Retrieve Web Token</button>
         <div style="width: 30%; word-wrap: break-word;">
             @jwt
         </div>
-        <NavLink class="nav-link" href="Identity/Account/Logout">
+        <NavLink class="nav-link prof-link" href="Identity/Account/Logout">
             <span class="oi oi-account-logout" aria-hidden="true"></span> Log out
         </NavLink>
     </Authorized>

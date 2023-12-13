@@ -11,13 +11,13 @@ namespace ServerBlazor.Models
         IEnumerable<Post> GetPostsByUsername(string username);
         IEnumerable<Post> GetPostsByBlogId(int blogId);
         IEnumerable<Comment> GetCommentsByPost(int id);
-        Task Create(Blog blog, IPrincipal principal);
-        Task Create(Post post, IPrincipal principal);
-        Task Update(Post post);
-        Task Delete(Post post);
-        Task Create(Comment comment, IPrincipal principal);
-        Task Update(Comment comment);
-        Task Delete(Comment comment);
+        Task CreateBlog(Blog blog, IPrincipal principal);
+        Task CreatePost(Post post, IPrincipal principal);
+        Task Update(int id, Post post);
+        Task DeletePost(int postId);
+        Task CreateComment(Comment comment, IPrincipal principal);
+        Task UpdateComment(Comment comment);
+        Task DeleteComment(Comment comment);
         int BlogIdByUserId(string userId);
     }
 

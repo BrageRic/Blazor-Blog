@@ -23,6 +23,6 @@ namespace ServerBlazor.Models.Entities
         public string Title { get; set; }
         [Required]
         public string Content { get; set; }
-        public List<string> Tags { get; set; } = new ();
+        public List<Tag> Tags { get; set; } = new ();
     }
 }

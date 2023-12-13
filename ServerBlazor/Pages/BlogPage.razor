@@ -18,7 +18,7 @@
 @foreach (var post in Posts)
 {
     <div>
-        <NavLink class="nav-link" href="">
+        <NavLink class="nav-link" href=@($"Post/{post.PostId}")>
             <span class="oi oi-list-rich" aria-hidden="true"></span> @post.Title
         </NavLink>
     </div>
