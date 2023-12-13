@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using System.Text.Json.Serialization;
 
 namespace ServerBlazor.Models.Entities
 {
@@ -9,7 +10,9 @@ namespace ServerBlazor.Models.Entities
 
         //Navigational Properties
         public int PostId { get; set; }
+        [JsonIgnore]
         public virtual Post? Post { get; set; }
+        [JsonIgnore]
         public virtual IdentityUser? Owner { get; set; }
     }
 }

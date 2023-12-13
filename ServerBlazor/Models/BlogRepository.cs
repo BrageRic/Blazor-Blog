@@ -32,7 +32,8 @@ namespace ServerBlazor.Models
 
         public Blog GetBlog(int id)
         {
-            var b = _db.Blog.Find(id);
+            var b = _db.Blog.Where(x => x.BlogId == id)
+                .Include(x => x.Posts).FirstOrDefault();
             return b;
         }
 

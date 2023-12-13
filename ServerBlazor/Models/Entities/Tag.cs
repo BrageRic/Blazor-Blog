@@ -1,4 +1,6 @@
-﻿namespace ServerBlazor.Models.Entities
+﻿using System.Text.Json.Serialization;
+
+namespace ServerBlazor.Models.Entities
 {
     public class Tag
     {
@@ -6,6 +8,7 @@
         public string TagText { get; set; }
 
         //Navigational Properties
+        [JsonIgnore]
         public List<Post> Posts { get; } = new();
     }
 

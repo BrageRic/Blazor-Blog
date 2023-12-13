@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace ServerBlazor.Models.Entities
 {
@@ -13,7 +14,9 @@ namespace ServerBlazor.Models.Entities
         public virtual List<Comment>? Comments { get; set; } = new ();
         public virtual List<Tag>? Tags { get; set; } = new();
         public int BlogId { get; set; }
+        [JsonIgnore]
         public virtual Blog? Blog { get; set; }
+        [JsonIgnore]
         public virtual IdentityUser? Owner { get; set; }
     }
 

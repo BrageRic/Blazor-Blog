@@ -33,18 +33,18 @@ namespace ServerBlazor.Server.Controllers
         ///     Sample request:
         ///         GET /api/BlogAPI/getPost/3
         /// </remarks>
-        /// <param name="id"></param>
+        /// <param name="postId"></param>
         /// <response code="200">Returns the specified post</response>
         /// <response code="404">PostId not found</response>
         [AllowAnonymous]
-        [HttpGet("getPost/{id}")]
-        public IActionResult GetPost([FromRoute] int id)
+        [HttpGet("getPost/{postId}")]
+        public IActionResult GetPost([FromRoute] int postId)
         {
-            if (!PostExists(id))
+            if (!PostExists(postId))
             {
                 return NotFound();
             }
-            var post = _repository.GetPost(id);
+            var post = _repository.GetPost(postId);
 
             return Ok(post);
         }
@@ -79,59 +79,96 @@ namespace ServerBlazor.Server.Controllers
         ///     Sample request:
         ///         GET /api/BlogAPI/getblog/3
         /// </remarks>
-        /// <param name="id"></param>
+        /// <param name="blogId"></param>
         /// <response code="200">Returns a specific blog</response>
         /// <response code="404">BlogId not found</response>
         [AllowAnonymous]
-        [HttpGet("getBlog/{id}")]
-        public IActionResult GetBlog([FromRoute] int id)
+        [HttpGet("getBlog/{blogId}")]
+        public IActionResult GetBlog([FromRoute] int blogId)
         {
-            if (!BlogExists(id))
+            if (!BlogExists(blogId))
             {
                 return NotFound();
             }
-            var post = _repository.GetBlog(id);
+            var blog = _repository.GetBlog(blogId);
 
-            return Ok(post);
+            return Ok(blog);
         }
 
-        // GET: api/BlogAPI/getComments/3
+        /// <summary>
+        ///     Gets a comments linked to a post.
+        /// </summary>
+        /// <remarks>
+        ///     Sample request:
+        ///         GET /api/BlogAPI/getComments/3
+        /// </remarks>
+        /// <param name="postId"></param>
+        /// <response code="200">Returns comments</response>
+        /// <response code="404">PostId not found</response>
         [AllowAnonymous]
-        [HttpGet("getComments/{id}")]
-        public IActionResult GetComments([FromRoute] int id)
+        [HttpGet("getComments/{postId}")]
+        public IActionResult GetComments([FromRoute] int postId)
         {
-            if (!PostExists(id))
+            if (!PostExists(postId))
             {
                 return NotFound();
             }
-            var comments = _repository.GetCommentsByPost(id);
+            var comments = _repository.GetCommentsByPost(postId);
 
             return Ok(comments);
         }
 
-        // POST: api/BlogAPI/newComment/3
+        // TODO: Possibly make DTO for the swagger example body?
+        /// <summary>
+        ///     Publish a new comment to specific post.
+        /// </summary>
+        /// <remarks>
+        ///     Sample request:
+        ///     
+        ///         POST /api/BlogAPI/newComment/3
+        ///         {
+        ///             "commentText": "string"
+        ///         }
+        /// </remarks>
+        /// <param name="postId"></param>
+        /// <param name="comment"></param>
+        /// <response code="201">Returns created comment</response>
+        /// <response code="404">PostId not found</response>
         [Authorize]
-        [HttpPost("newComment/{id}")]
-        public async Task<IActionResult> NewComment([FromBody][Bind("CommentText")] Comment comment, [FromRoute] int id)
+        [HttpPost("newComment/{postId}")]
+        public async Task<IActionResult> NewComment([FromBody][Bind("CommentText")] Comment comment, [FromRoute] int postId)
         {
-            if (!PostExists(id))
+            if (!PostExists(postId))
             {
                 return NotFound();
             }
-            comment.PostId = id;
+            comment.PostId = postId;
             await _repository.CreateComment(comment, User);
 
-            return CreatedAtAction("GetComments", new { id }, comment);
+            return CreatedAtAction("GetComments", new { postId }, comment);
         }
 
-        // POST: api/BlogAPI/newPost 
+        /// <summary>
+        ///     Publish a new comment to specific post.
+        /// </summary>
+        /// <remarks>
+        ///     Sample request:
+        ///     
+        ///         POST /api/BlogAPI/newPost
+        ///         {
+        ///             "Title": "string"
+        ///             "Content": "string"
+        ///         }
+        /// </remarks>
+        /// <param name="post"></param>
+        /// <response code="201">Returns created post</response>
         [Authorize]
         [HttpPost("newPost")]
         public async Task<IActionResult> NewPost([FromBody][Bind("Title,Content")] Post post)
         {
             await _repository.CreatePost(post, User);
 
-            return CreatedAtAction("GetPost", new { id = post.PostId }, post);
+            return CreatedAtAction("GetPost", new { postId = post.PostId }, post);
         }
 
         [Authorize]
@@ -140,7 +177,7 @@ namespace ServerBlazor.Server.Controllers
         {
             await _repository.CreateBlog(blog, User);
 
-            return CreatedAtAction("GetBlog", new { id = blog.BlogId }, blog);
+            return CreatedAtAction("GetBlog", new { blogId = blog.BlogId }, blog);
         }
 
         private bool PostExists(int id)
