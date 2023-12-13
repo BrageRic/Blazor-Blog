@@ -1,0 +1,75 @@
+﻿@using ServerBlazor.Models
+@using ServerBlazor.Models.Entities
+@using System.Security.Claims
+@inject IBlogRepository _repo
+
+<h5>Comments</h5>
+
+<EditForm Model=@comment OnValidSubmit=@OnSubmit>
+    <DataAnnotationsValidator />
+    <div class="form-group" id="commentForm">
+        <InputText @bind-Value=comment.CommentText class="form-control" id="CommentText" placeholder="Post new comment"/>
+        <input type="submit" class="btn btn-primary" value="Post" />
+    </div>
+</EditForm>
+
+@foreach (var comment in comments)
+{
+    <span class="commentSpan">
+        <span id=@($"comment{comment.CommentId}")>
+            @($"{comment.Owner.UserName}: {comment.CommentText} ")
+        </span>
+        <AuthorizeView>
+            <Authorized>
+                @if (@context.User.Claims.FirstOrDefault().Value == @comment.Owner.Id)
+                {
+                    @*<button class="btn-danger btnCommentDel">Delete</button>*@
+                    <NavLink class="btnDelComment" @onclick="@(e => DelComment(e, comment.CommentId))" data-toggle="tooltip" data-placement="auto" title="Delete Comment">
+                        <span class="oi oi-delete"></span>
+                    </NavLink>
+                }
+            </Authorized>
+        </AuthorizeView>
+    </span>
+    <br>
+}
+<script>
+    $(function () {
+        $('.oi oi-delete').tooltip()
+    })
+</script>
+
+@code {
+    [Parameter]
+    public int PostId { get; set; }
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationState { get; set; }
+    private ClaimsPrincipal? user;
+    private IEnumerable<Comment>? comments { get; set; }
+    private CommentDTO? comment { get; set; } = new CommentDTO();
+
+    protected override async Task OnInitializedAsync()
+    {
+        comments = _repo.GetCommentsByPost(PostId);
+        var authState = await authenticationState;
+        user = authState?.User;
+    }
+
+    private async Task DelComment(MouseEventArgs e, int commentId)
+    {
+        await _repo.DeleteComment(commentId);
+        comments = _repo.GetCommentsByPost(PostId);
+    }
+
+    async Task OnSubmit()
+    {
+        var c = new Comment()
+        {
+            CommentText = comment.CommentText,
+            PostId = PostId
+        };
+        await _repo.CreateComment(c, user);
+        comments = _repo.GetCommentsByPost(PostId);
+        comment.CommentText = "";
+    }
+}

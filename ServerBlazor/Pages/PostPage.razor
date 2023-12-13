@@ -48,49 +48,20 @@
         </span>
     </div>
     <hr>
-    <h5>Comments</h5>
-    @foreach (var comment in comments)
-    {
-        <span class="commentSpan">
-            <span id=@($"comment{comment.CommentId}")>
-                @($"{comment.Owner.UserName}: {comment.CommentText} ")
-            </span>
-            <AuthorizeView>
-                <Authorized>
-                    @if (@context.User.Claims.FirstOrDefault().Value == @comment.Owner.Id)
-                    {
-                        @*<button class="btn-danger btnCommentDel">Delete</button>*@
-                        <NavLink class="btnDelComment" @onclick="@(e => DelComment(e, comment.CommentId))" data-toggle="tooltip" data-placement="top" title="Delete Comment">
-                            <span class="oi oi-delete"></span>
-                        </NavLink>
-                    }
-                </Authorized>
-            </AuthorizeView>
-        </span>
-        <br>
-
-    }
-    <script>
-        $(function () {
-            $('.oi oi-delete').tooltip()
-        })
-    </script>
+    <PostComments PostId=@PostId/>
 }
 
 @code {
     [Parameter]
     public int PostId { get; set; }
     private bool editPost = false;
-    private bool editComment = false;
     private string editPostButtonName = "Edit";
     private Post? post { get; set; }
     private PostDTO postDTO { get; set; }
-    private IEnumerable<Comment>? comments { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         post = _repo.GetPost(PostId);
-        comments = _repo.GetCommentsByPost(PostId);
     }
 
     private void EditPostHandling()
@@ -118,12 +89,6 @@
     {
         await _repo.DeletePost(postId);
         _navigation.NavigateTo("/Blog/" + post.BlogId);
-    }
-
-    private async Task DelComment(MouseEventArgs e, int commentId)
-    {
-        await _repo.DeleteComment(commentId);
-        comments = _repo.GetCommentsByPost(PostId);
     }
 
 }
