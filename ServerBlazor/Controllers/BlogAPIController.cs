@@ -171,15 +171,6 @@ namespace ServerBlazor.Server.Controllers
             return CreatedAtAction("GetPost", new { postId = post.PostId }, post);
         }
 
-        [Authorize]
-        [HttpPost("initializeBlog")] // midlertidig. skal bli private
-        public async Task<IActionResult> InitilizeBlog([FromBody][Bind("Name")] Blog blog)
-        {
-            await _repository.CreateBlog(blog, User);
-
-            return CreatedAtAction("GetBlog", new { blogId = blog.BlogId }, blog);
-        }
-
         private bool PostExists(int id)
         {
             return _db.Post.Any(x => x.PostId == id);

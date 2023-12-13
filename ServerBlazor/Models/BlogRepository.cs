@@ -50,13 +50,18 @@ namespace ServerBlazor.Models
 
         public IEnumerable<Comment> GetCommentsByPost(int id)
         {
-            return _db.Comment.Where(x => x.PostId == id).ToList();
+            return _db.Comment.Where(x => x.PostId == id)
+                .Include(x => x.Owner)
+                .ToList();
         }
 
-        public async Task CreateBlog(Blog blog, IPrincipal principal)
+        public async Task CreateBlog(IdentityUser user)
         {
-            var currentUser = await _manager.FindByNameAsync(principal.Identity.Name);
-            blog.Owner = currentUser;
+            var blog = new Blog()
+            {
+                Owner = user,
+                Name = user.UserName
+            };
             _db.Blog.Add(blog);
             await _db.SaveChangesAsync();
         }

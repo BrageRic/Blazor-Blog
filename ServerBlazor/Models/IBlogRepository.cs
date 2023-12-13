@@ -11,7 +11,7 @@ namespace ServerBlazor.Models
         IEnumerable<Post> GetPostsByUsername(string username);
         IEnumerable<Post> GetPostsByBlogId(int blogId);
         IEnumerable<Comment> GetCommentsByPost(int id);
-        Task CreateBlog(Blog blog, IPrincipal principal);
+        Task CreateBlog(IdentityUser user);
         Task CreatePost(Post post, IPrincipal principal);
         Task Update(int id, Post post);
         Task DeletePost(int postId);

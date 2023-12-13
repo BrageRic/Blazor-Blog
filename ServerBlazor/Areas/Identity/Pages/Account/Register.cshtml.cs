@@ -18,6 +18,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using NuGet.Protocol.Core.Types;
+using ServerBlazor.Models;
+using ServerBlazor.Models.Entities;
 
 namespace ServerBlazor.Areas.Identity.Pages.Account
 {
@@ -29,13 +32,15 @@ namespace ServerBlazor.Areas.Identity.Pages.Account
         private readonly IUserEmailStore<IdentityUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
+        private readonly IBlogRepository _blogRepository;
 
         public RegisterModel(
             UserManager<IdentityUser> userManager,
             IUserStore<IdentityUser> userStore,
             SignInManager<IdentityUser> signInManager,
             ILogger<RegisterModel> logger,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            IBlogRepository repository)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -43,6 +48,7 @@ namespace ServerBlazor.Areas.Identity.Pages.Account
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
+            _blogRepository = repository;
         }
 
         /// <summary>
@@ -141,6 +147,7 @@ namespace ServerBlazor.Areas.Identity.Pages.Account
                     else
                     {
                         await _signInManager.SignInAsync(user, isPersistent: false);
+                        await InitilizeBlog(user);
                         return LocalRedirect(returnUrl);
                     }
                 }
@@ -175,6 +182,11 @@ namespace ServerBlazor.Areas.Identity.Pages.Account
                 throw new NotSupportedException("The default UI requires a user store with email support.");
             }
             return (IUserEmailStore<IdentityUser>)_userStore;
+        }
+
+        private async Task InitilizeBlog(IdentityUser user)
+        {
+            await _blogRepository.CreateBlog(user);
         }
     }
 }

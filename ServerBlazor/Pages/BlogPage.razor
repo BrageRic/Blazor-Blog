@@ -4,7 +4,7 @@
 @inject IMySharedService MySharedService
 @page "/Blog/{BlogId:int}"
 
-<h3>BlogPage</h3>
+<h3>@blogName</h3>
 <hr>
 <button @onclick="HandlePostForm">@buttonName</button>
 @if (create)
@@ -31,10 +31,12 @@
     private IEnumerable<Post>? Posts;
     private bool create = false;
     private string buttonName = "New Post";
+    private string? blogName { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         Posts = _repo.GetPostsByBlogId(BlogId);
+        blogName = _repo.GetBlog(BlogId).Name;
         MySharedService.OnRefreshRequested += HandleRefreshRequested;
     }
 
