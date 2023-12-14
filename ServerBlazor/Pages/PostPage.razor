@@ -32,20 +32,23 @@
                 <div class="form-group">
                     <InputTextArea @bind-Value=post.Content class="form-control" id="Content" rows="10" />
                 </div>
+                <div class="form-group">
+                    <InputText @bind-Value=tags class="form-control" id="Tags" />
+                </div>
                 <input type="submit" class="btn btn-primary" value="Save" />
             </EditForm>
         } else
         {
             <h3>@post.Title</h3>
             <p>@post.Content</p>
+            <span>
+                @foreach (var tag in post.Tags)
+                {
+                    <b class="tag">@($"{tag.TagText} ")</b>
+                }
+            </span>
         }
 
-        <span>
-            @foreach (var tag in post.Tags)
-            {
-                <b class="tag">@($"{tag.TagText} ")</b>
-            }
-        </span>
     </div>
     <hr>
     <PostComments PostId=@PostId/>
@@ -58,10 +61,19 @@
     private string editPostButtonName = "Edit";
     private Post? post { get; set; }
     private PostDTO postDTO { get; set; }
+    private string? tags { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         post = _repo.GetPost(PostId);
+        if (post.Tags.Count > 0)
+        {
+            foreach (var tag in post.Tags)
+            {
+                tags += $"{tag.TagText},";
+            }
+            tags = tags.TrimEnd(',');
+        }
     }
 
     private void EditPostHandling()
@@ -79,7 +91,22 @@
 
     private async Task OnSubmit()
     {
+        List<Tag> tagList = new();
+        var updatedTagString = "";
         await _repo.Update(PostId, post);
+
+        if (!string.IsNullOrEmpty(tags))
+        {
+            foreach (var tag in tags.Trim().Split(','))
+            {
+                tagList.Add(new Tag() { TagText = tag.ToUpper() });
+                updatedTagString += $"{tag.ToUpper()},";
+            }
+            updatedTagString = updatedTagString.TrimEnd(',');
+            await _repo.AddTagsToPost(PostId, tagList);
+            tags = updatedTagString;
+        }
+      
         editPost = false;
         editPostButtonName = "Edit";
         post = _repo.GetPost(PostId);

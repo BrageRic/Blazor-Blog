@@ -6,6 +6,8 @@ using System.Security.Principal;
 using System.Reflection.Metadata;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace ServerBlazor.Models
 {
@@ -66,13 +68,14 @@ namespace ServerBlazor.Models
             await _db.SaveChangesAsync();
         }
 
-        public async Task CreatePost(Post post, IPrincipal principal)
+        public async Task<int> CreatePost(Post post, IPrincipal principal)
         {
             var currentUser = await _manager.FindByNameAsync(principal.Identity.Name);
             post.Owner = currentUser;
             post.BlogId = BlogIdByUserId(currentUser.Id);
             _db.Post.Add(post);
             await _db.SaveChangesAsync();
+            return post.PostId;
         }
 
         public async Task Update(int id, Post post)
@@ -80,7 +83,7 @@ namespace ServerBlazor.Models
             var p = _db.Post.Find(id);
             p.Title = post.Title;
             p.Content = post.Content;
-            p.Tags = post.Tags;
+
             _db.Post.Update(p);
             await _db.SaveChangesAsync();
         }
@@ -117,5 +120,29 @@ namespace ServerBlazor.Models
             return _db.Blog.Where(x => x.Owner.Id == userId).Select(x => x.BlogId).FirstOrDefault();
         }
 
+        public async Task AddTagsToPost(int postId, List<Tag> tags)
+        {
+            var p = await _db.Post.FindAsync(postId);
+            p.Tags = new List<Tag>();
+            foreach (var tag in tags)
+            {
+                if (TagExists(tag)) // Add existing tag to post.
+                {
+                    var t = _db.Tag.Where(x => x.TagText == tag.TagText).FirstOrDefault();
+                    p.Tags.Add(t);
+                }
+                else // Create new tag and add it to post.
+                {
+                    p.Tags.Add(tag);
+                }
+            }
+            _db.Post.Update(p);
+            await _db.SaveChangesAsync();
+        }
+
+        private bool TagExists(Tag tag)
+        {
+            return _db.Tag.Any(x => x.TagText == tag.TagText);
+        }
     }
 }

@@ -24,7 +24,7 @@
                 @if (@context.User.Claims.FirstOrDefault().Value == @comment.Owner.Id)
                 {
                     @*<button class="btn-danger btnCommentDel">Delete</button>*@
-                    <NavLink class="btnDelComment" @onclick="@(e => DelComment(e, comment.CommentId))" data-toggle="tooltip" data-placement="auto" title="Delete Comment">
+                    <NavLink class="btnDelComment" @onclick="@(e => DelComment(e, comment.CommentId))" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete Comment">
                         <span class="oi oi-delete"></span>
                     </NavLink>
                 }
@@ -33,11 +33,6 @@
     </span>
     <br>
 }
-<script>
-    $(function () {
-        $('.oi oi-delete').tooltip()
-    })
-</script>
 
 @code {
     [Parameter]
