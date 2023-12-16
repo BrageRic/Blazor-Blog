@@ -12,6 +12,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
+using Microsoft.AspNetCore.Components;
+using ServerBlazor.Shared;
+using Microsoft.AspNetCore.SignalR.Client;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,18 +52,22 @@ builder.Services.AddSwaggerGen(c =>
     var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 });
-builder.Services.AddHttpClient("ApiClient", client =>
-{
-    client.BaseAddress = new Uri("https://localhost:44338/");
-});
+builder.Services.AddHttpClient("ApiClient");
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddTransient<IBlogRepository, BlogRepository>();
 builder.Services.AddSingleton<WeatherForecastService>();
-builder.Services.AddScoped<SignalRService>();
+builder.Services.AddScoped(sp =>
+{
+    var navMan = sp.GetRequiredService<NavigationManager>();
+    return new HubConnectionBuilder()
+        .WithUrl(navMan.ToAbsoluteUri("/notihub"))
+        .ConfigureLogging(logging => logging.AddConsole())
+        .WithAutomaticReconnect()
+        .Build();
+});
 builder.Services.AddSingleton<IMySharedService, MySharedService>();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-//builder.Services.AddDefaultIdentity<IdentityUser>().AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddIdentity<IdentityUser, IdentityRole>()
     .AddRoleManager<RoleManager<IdentityRole>>()
     .AddSignInManager<SignInManager<IdentityUser>>()
@@ -70,7 +77,6 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>()
 // støtte for JWT
 var confKey = builder.Configuration.GetSection("TokenSettings")["SecretKey"];
 var key = Encoding.ASCII.GetBytes(confKey);
-//builder.Services.AddAuthentication()
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     //.AddCookie(cfg => cfg.SlidingExpiration = true)
     .AddJwtBearer(x =>
@@ -83,23 +89,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         ValidateAudience = false,
         ValidateLifetime = true
     };
-    //x.Events = new JwtBearerEvents
-    //{
-    //    OnMessageReceived = context =>
-    //    {
-    //        var accessToken = context.Request.Query["access_token"];
-
-    //        // If the request is for our hub...
-    //        var path = context.HttpContext.Request.Path;
-    //        if (!string.IsNullOrEmpty(accessToken) &&
-    //            path.StartsWithSegments("/notihub"))
-    //        {
-    //            // Read the token out of the query string
-    //            context.Token = accessToken;
-    //        }
-    //        return Task.CompletedTask;
-    //    }
-    //};
 });
 builder.Services.AddResponseCompression(opts =>
 {
@@ -133,7 +122,6 @@ app.UseEndpoints(endpoints =>
 {
     endpoints.MapControllers();
     endpoints.MapBlazorHub();
-    app.MapHub<ChatHub>("/chathub");
     app.MapHub<NotiHub>("/notihub");
     endpoints.MapRazorPages();
     endpoints.MapFallbackToPage("/_Host");

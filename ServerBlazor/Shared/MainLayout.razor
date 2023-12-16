@@ -1,4 +1,7 @@
 ﻿@inherits LayoutComponentBase
+@using Microsoft.AspNetCore.SignalR.Client
+@inject NavigationManager _navigation
+@implements IAsyncDisposable
 
 <PageTitle>ServerBlazor</PageTitle>
 
@@ -22,7 +25,14 @@
                 </NotAuthorized>
             </AuthorizeView>
             
-            <Notifications />
+            Clients: @clientCount
+            Notifications:
+            <ul id="messagesList">
+                @foreach (var message in messages)
+                {
+                    <li>@message</li>
+                }
+            </ul>
         </div>
 
         <article class="content px-4">
@@ -30,3 +40,28 @@
         </article>
     </main>
 </div>
+
+@code {
+    private List<string> messages = new List<string>();
+    private int clientCount { get; set; }
+    [Inject] HubConnection _hubConnection { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _hubConnection.On<int>("UpdateClientsCount", (count) =>
+        {
+            clientCount = count;
+            InvokeAsync(StateHasChanged);
+        });
+
+        await _hubConnection.StartAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_hubConnection is not null)
+        {
+            await _hubConnection.DisposeAsync();
+        }
+    }
+}

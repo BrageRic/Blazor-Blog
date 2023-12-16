@@ -20,6 +20,7 @@ namespace ServerBlazor.Models
         Task DeleteComment(int commentId);
         int BlogIdByUserId(string userId);
         Task AddTagsToPost(int postId, List<Tag> tags);
+        string GetUidByUsername(string username);
     }
 
 

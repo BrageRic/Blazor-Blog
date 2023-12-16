@@ -1,6 +1,7 @@
 ﻿@using ServerBlazor.Models
 @using ServerBlazor.Models.Entities
 @using System.Security.Claims
+@using Microsoft.AspNetCore.SignalR.Client
 @inject IBlogRepository _repo
 
 <h5>Comments</h5>
@@ -42,12 +43,19 @@
     private ClaimsPrincipal? user;
     private IEnumerable<Comment>? comments { get; set; }
     private CommentDTO? comment { get; set; } = new CommentDTO();
+    [Inject] HubConnection _hubConnection { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         comments = _repo.GetCommentsByPost(PostId);
         var authState = await authenticationState;
         user = authState?.User;
+
+        _hubConnection.On("ReceiveComment", () =>
+        {
+            comments = _repo.GetCommentsByPost(PostId);
+            StateHasChanged();
+        });
     }
 
     private async Task DelComment(MouseEventArgs e, int commentId)
@@ -66,5 +74,9 @@
         await _repo.CreateComment(c, user);
         comments = _repo.GetCommentsByPost(PostId);
         comment.CommentText = "";
+        if (_hubConnection is not null)
+        {
+            _hubConnection.SendAsync("ReleaseComment");
+        }
     }
 }

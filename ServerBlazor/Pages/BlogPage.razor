@@ -1,18 +1,40 @@
 ﻿@using ServerBlazor.Models
 @using ServerBlazor.Models.Entities
+@using System.Security.Claims
+@using Microsoft.AspNetCore.SignalR.Client
 @inject IBlogRepository _repo
-@inject IMySharedService MySharedService
+@inject NavigationManager _navigation
 @page "/Blog/{BlogId:int}"
+@if (blog is null) _navigation.NavigateTo(_navigation.BaseUri);
 
-<h3>@blogName</h3>
+<h3>@blog.Name</h3>
 <hr>
-<button @onclick="HandlePostForm">@buttonName</button>
+<AuthorizeView>
+    <Authorized>
+        @if (@context.User.Claims.FirstOrDefault().Value == blog.Owner.Id) {
+            <button @onclick="HandlePostForm">@buttonName</button>
+        }
+    </Authorized>
+</AuthorizeView>
 @if (create)
 {
-    <CascadingValue Name="Posts" Value="Posts">
-        <NewPost />
-        <hr>
-    </CascadingValue>
+    <EditForm Model=@newPost OnValidSubmit=@OnSubmit>
+        <DataAnnotationsValidator />
+        <div class="form-group">
+            <label for="Title">Title</label>
+            <InputText @bind-Value=newPost.Title class="form-control" id="Title" />
+        </div>
+        <div class="form-group">
+            <label for="Content">Content</label>
+            <InputTextArea @bind-Value=newPost.Content class="form-control" id="Content" rows="10" />
+        </div>
+        <div class="form-group">
+            <label for="Tags">Tags</label>
+            <InputText @bind-Value=tags class="form-control" id="Tags" data-role="tagsinput" placeholder="Comma separated tags" />
+        </div>
+        <input type="submit" class="btn btn-primary" value="Save" />
+    </EditForm>
+    <hr>
 }
 
 @foreach (var post in Posts)
@@ -31,18 +53,27 @@
     private IEnumerable<Post>? Posts;
     private bool create = false;
     private string buttonName = "New Post";
-    private string? blogName { get; set; }
+    private Blog? blog { get; set; }
+    PostDTO newPost = new PostDTO();
+    private string? tags { get; set; }
+    private ClaimsPrincipal? user;
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationState { get; set; }
+    private string? test { get; set; }
+    [Inject] HubConnection _hubConnection { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
+        blog = _repo.GetBlog(BlogId);
         Posts = _repo.GetPostsByBlogId(BlogId);
-        blogName = _repo.GetBlog(BlogId).Name;
-        MySharedService.OnRefreshRequested += HandleRefreshRequested;
-    }
+        var authState = await authenticationState;
+        user = authState?.User;
 
-    private void HandleRefreshRequested()
-    {
-        InvokeAsync(StateHasChanged);
+        _hubConnection.On("ReceivePost", () =>
+        {
+            Posts = _repo.GetPostsByBlogId(BlogId);
+            StateHasChanged();
+        });
     }
 
     private void HandlePostForm()
@@ -56,6 +87,37 @@
         {
             create = false;
             buttonName = "New Post";
+        }
+    }
+
+    async Task OnSubmit()
+    {
+        var blogId = _repo.BlogIdByUserId(user.Claims.FirstOrDefault().Value);
+        List<Tag> tagList = new();
+
+        if (!string.IsNullOrEmpty(tags))
+        {
+            foreach (var tag in tags.Trim().Split(','))
+            {
+                tagList.Add(new Tag() { TagText = tag.ToUpper() });
+            }
+        }
+
+        var post = new Post()
+            {
+                Title = newPost.Title,
+                Content = newPost.Content,
+                BlogId = blogId
+            };
+        var postId = await _repo.CreatePost(post, user);
+        await _repo.AddTagsToPost(postId, tagList);
+        create = false;
+        buttonName = "New Post";
+        newPost = new PostDTO();
+        Posts = _repo.GetPostsByBlogId(blogId);
+        if (_hubConnection is not null)
+        {
+            await _hubConnection.SendAsync("ReleasePost");
         }
     }
 }

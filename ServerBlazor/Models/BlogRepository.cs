@@ -35,7 +35,9 @@ namespace ServerBlazor.Models
         public Blog GetBlog(int id)
         {
             var b = _db.Blog.Where(x => x.BlogId == id)
-                .Include(x => x.Posts).FirstOrDefault();
+                .Include(x => x.Posts)
+                .Include(x => x.Owner)
+                .FirstOrDefault();
             return b;
         }
 
@@ -138,6 +140,11 @@ namespace ServerBlazor.Models
             }
             _db.Post.Update(p);
             await _db.SaveChangesAsync();
+        }
+
+        public string GetUidByUsername(string username)
+        {
+            return _db.Users.Where(x => x.UserName == username).Select(x => x.Id).FirstOrDefault();
         }
 
         private bool TagExists(Tag tag)
