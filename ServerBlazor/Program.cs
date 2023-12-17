@@ -55,7 +55,6 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddHttpClient("ApiClient");
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddTransient<IBlogRepository, BlogRepository>();
-builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddScoped(sp =>
 {
     var navMan = sp.GetRequiredService<NavigationManager>();
@@ -65,7 +64,6 @@ builder.Services.AddScoped(sp =>
         .WithAutomaticReconnect()
         .Build();
 });
-builder.Services.AddSingleton<IMySharedService, MySharedService>();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddIdentity<IdentityUser, IdentityRole>()
