@@ -6,6 +6,7 @@ namespace ServerBlazor.Models
 {
     public interface IBlogRepository
     {
+        IEnumerable<Post> GetAllPosts();
         Post GetPost(int id);
         Blog GetBlog(int id);
         IEnumerable<Post> GetPostsByUsername(string username);

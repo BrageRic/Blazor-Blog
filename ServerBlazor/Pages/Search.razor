@@ -1,0 +1,91 @@
+﻿@using ServerBlazor.Models
+@using ServerBlazor.Models.Entities
+@inject IBlogRepository _repo
+
+<span hidden="@hiddenCheck"><b>Tag search example: </b>EN TO TRE <br></span>
+<label>Search for:</label>
+<select id="searchSelect" @onchange="OnSelection" class="form-select form-select-sm" aria-label=".form-select-sm example">
+    <option selected value="title">Title</option>
+    <option value="username">Username</option>
+    <option value="tags">Tags</option>
+</select>
+<input @bind-value="searchString" @bind-value:event="oninput" @onkeyup="@OnSearch" placeholder="Input" />
+<input type="checkbox" hidden="@hiddenCheck" @bind="logicAnd" @bind:event="oninput" @onchange="@OnSearch" name="logicAnd"/>
+<label hidden="@hiddenCheck" for="logicAnd">Posts must contain all supplied tags</label> 
+
+<hr>
+@showing
+<ul>
+    @if (requestedPosts is not null) 
+    {
+        @foreach (var post in requestedPosts)
+        {
+            <li>
+                <NavLink class="post-link" href=@($"Post/{post.PostId}")>
+                    <span class="oi oi-list-rich" aria-hidden="true"></span> @post.Title
+                </NavLink>
+            </li>
+        }
+    }
+</ul>  
+
+@code {
+    private IEnumerable<Post>? posts { get; set; }
+    private IEnumerable<Post>? requestedPosts { get; set; }
+    private string? searchString { get; set; }
+    private string? showing { get; set; } = "";
+    private string? searchMethod { get; set; } = "title";
+    private bool hiddenCheck { get; set; } = true;
+    private bool logicAnd { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        posts = _repo.GetAllPosts();
+    }
+
+    private async Task OnSearch()
+    {
+        if (string.IsNullOrEmpty(searchString))
+        {
+            showing = "";
+            requestedPosts = null;
+            return;
+        }
+        switch (searchMethod)
+        {
+            case "title":
+                showing = $"Showing posts where title contains: {searchString}";
+                requestedPosts = posts.Where(x => x.Title.ToUpper().Contains(searchString.ToUpper()));
+                break;
+            case "username":
+                showing = $"Showing posts where username starts with: {searchString}";
+                requestedPosts = posts.Where(x => x.Owner.UserName.ToUpper().StartsWith(searchString.ToUpper()));
+                break;
+            case "tags":
+                var tagsList = searchString.ToUpper().Split(" ");
+                if (!logicAnd)
+                {
+                    showing = $"Showing posts tagged with any of: {searchString.ToUpper()}";
+                    requestedPosts = posts.Where(p => p.Tags.Any(t => tagsList.Contains(t.TagText)));
+                } else
+                {
+                    showing = $"Showing posts tagged with all: {searchString.ToUpper()}";
+                    requestedPosts = posts.Where(p => tagsList.All(st => p.Tags.Any(t => t.TagText == st)));
+                }
+                break;
+        }
+    }
+
+    private void OnSelection(ChangeEventArgs e)
+    {
+        if (e.Value.ToString() == "tags")
+        {
+            hiddenCheck = false;
+        } else
+        {
+            hiddenCheck = true;
+        }
+        searchMethod = e.Value.ToString();
+        OnSearch();
+    }
+}

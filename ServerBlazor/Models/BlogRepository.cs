@@ -22,6 +22,14 @@ namespace ServerBlazor.Models
             _manager = manager;
         }
 
+        public IEnumerable<Post> GetAllPosts()
+        {
+            return _db.Post
+                .Include(x => x.Owner)
+                .Include(x => x.Tags)
+                .ToList();
+        }
+
         public Post GetPost(int id)
         {
             var p = _db.Post.Where(x => x.PostId == id)
