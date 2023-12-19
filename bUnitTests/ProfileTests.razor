@@ -1,0 +1,60 @@
+@attribute [TestClass]
+@inherits BunitTestContext
+@using ServerBlazor.Pages
+@using ServerBlazor.Models
+@using ServerBlazor.Models.Entities
+@using Moq
+@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+@using Microsoft.AspNetCore.SignalR.Client
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.Extensions.Configuration;
+@using System.IdentityModel.Tokens.Jwt
+
+@code {
+    [TestMethod]
+    public void ProfilePage_ShouldDisplayIfAuthorized()
+    {
+        // Arrange
+        var repoMock = new Mock<IBlogRepository>();
+        var configurationMock = new Mock<IConfiguration>();
+
+        using var ctx = new Bunit.TestContext();
+        ctx.Services.AddSingleton(_ => repoMock.Object); // Register the mock repository in the service collection
+        ctx.Services.AddSingleton(_ => configurationMock.Object); // Register the mock configuration in the service collection
+
+        var auth = ctx.AddTestAuthorization();
+        auth.SetAuthorized("Test User");
+
+        var cut = ctx.RenderComponent<Profile>();
+
+        // Act
+        var header = cut.Find("h3").TextContent;
+
+        // Assert
+        Assert.AreEqual("Profile for Test User", header);
+    }
+
+    [TestMethod]
+    public void ProfilePage_ShouldNotDisplayIfUnauthorized()
+    {
+        // Arrange
+        var repoMock = new Mock<IBlogRepository>();
+        var configurationMock = new Mock<IConfiguration>();
+
+        using var ctx = new Bunit.TestContext();
+        ctx.Services.AddSingleton(_ => repoMock.Object); // Register the mock repository in the service collection
+        ctx.Services.AddSingleton(_ => configurationMock.Object); // Register the mock configuration in the service collection
+
+        var auth = ctx.AddTestAuthorization();
+        auth.SetAuthorized("Test User", AuthorizationState.Unauthorized);
+
+        var cut = ctx.RenderComponent<Profile>();
+
+        // Act
+        var markup = cut.Markup;
+
+        // Assert
+        markup.MarkupMatches("You must log in to see this page");
+    }
+}

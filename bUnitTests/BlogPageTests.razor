@@ -1,0 +1,45 @@
+@attribute [TestClass]
+@inherits BunitTestContext
+@using ServerBlazor.Pages
+@using ServerBlazor.Models
+@using ServerBlazor.Models.Entities
+@using Moq
+@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+@using Microsoft.AspNetCore.SignalR.Client
+@using Microsoft.AspNetCore.Components.Authorization
+
+@code {
+	[TestMethod]
+	public void test1()
+	{
+        // Arrange
+        var repoMock = new Mock<IBlogRepository>();
+        var navigationManagerMock = new Mock<NavigationManager>();
+        var expectedBlog = new Blog { BlogId = 1, Name = "Test Blog", Owner = new IdentityUser { Id = "testUserId" } };
+        var expectedPosts = new List<Post>
+        {
+            new Post { PostId = 1, Title = "Test Post 1" },
+            new Post { PostId = 2, Title = "Test Post 2" },
+        };
+        repoMock.Setup(repo => repo.GetBlog(1)).Returns(expectedBlog);
+        repoMock.Setup(repo => repo.GetPostsByBlogId(1)).Returns(expectedPosts);
+
+        var authenticationStateTask = Task.FromResult(new AuthenticationState(new ClaimsPrincipal())); // Mock authentication state
+        var hubConnectionMock = new Mock<HubConnection>(); // Mock HubConnection
+
+        using var ctx = new Bunit.TestContext();
+        ctx.Services.AddSingleton(_ => repoMock.Object); // Register the mock repository in the service collection
+        ctx.Services.AddSingleton(_ => navigationManagerMock.Object); // Register the mock NavigationManager
+        ctx.Services.AddSingleton(_ => authenticationStateTask); // Register the mock authentication state
+        ctx.Services.AddSingleton(_ => hubConnectionMock.Object); // Register the mock HubConnection
+        var cut = ctx.Render(@<BlogPage BlogId="1" />);
+
+        // Act
+        var blogHeader = cut.Find("h3");
+        var createPostButton = cut.Find("button");
+
+        // Assert
+        Assert.AreEqual("Test Blog", blogHeader.TextContent);
+    }
+}
