@@ -54,7 +54,7 @@
         _hubConnection.On("ReceiveComment", () =>
         {
             comments = _repo.GetCommentsByPost(PostId);
-            StateHasChanged();
+            InvokeAsync(StateHasChanged);
         });
     }
 

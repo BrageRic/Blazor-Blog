@@ -7,8 +7,10 @@ using Microsoft.EntityFrameworkCore;
 using ServerBlazor.Models;
 using ServerBlazor.Models.Entities;
 using ServerBlazor.Data;
+using ServerBlazor.Hubs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using NuGet.Protocol;
+using Microsoft.AspNetCore.SignalR;
 
 namespace ServerBlazor.Server.Controllers
 {
@@ -19,11 +21,13 @@ namespace ServerBlazor.Server.Controllers
     {
         private readonly IBlogRepository _repository;
         private readonly ApplicationDbContext _db;
+        public IHubContext<NotiHub, INotiClient> _hubContext { get; }
 
-        public BlogAPIController(IBlogRepository repository, ApplicationDbContext db)
+        public BlogAPIController(IBlogRepository repository, ApplicationDbContext db, IHubContext<NotiHub, INotiClient> hubContext)
         {
             _repository = repository;
             _db = db;
+            _hubContext = hubContext;
         }
 
         /// <summary>
@@ -144,6 +148,7 @@ namespace ServerBlazor.Server.Controllers
             }
             comment.PostId = postId;
             await _repository.CreateComment(comment, User);
+            await _hubContext.Clients.All.ReceiveComment();
 
             return CreatedAtAction("GetComments", new { postId }, comment);
         }
@@ -167,6 +172,7 @@ namespace ServerBlazor.Server.Controllers
         public async Task<IActionResult> NewPost([FromBody][Bind("Title,Content")] Post post)
         {
             await _repository.CreatePost(post, User);
+            await _hubContext.Clients.All.ReceivePost();
 
             return CreatedAtAction("GetPost", new { postId = post.PostId }, post);
         }

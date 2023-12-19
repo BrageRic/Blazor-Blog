@@ -72,7 +72,7 @@
         _hubConnection.On("ReceivePost", () =>
         {
             Posts = _repo.GetPostsByBlogId(BlogId);
-            StateHasChanged();
+            InvokeAsync(StateHasChanged);
         });
     }
 
