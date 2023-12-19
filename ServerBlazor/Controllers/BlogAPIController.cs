@@ -20,13 +20,11 @@ namespace ServerBlazor.Server.Controllers
     public class BlogAPIController : ControllerBase
     {
         private readonly IBlogRepository _repository;
-        private readonly ApplicationDbContext _db;
         public IHubContext<NotiHub, INotiClient> _hubContext { get; }
 
-        public BlogAPIController(IBlogRepository repository, ApplicationDbContext db, IHubContext<NotiHub, INotiClient> hubContext)
+        public BlogAPIController(IBlogRepository repository, IHubContext<NotiHub, INotiClient> hubContext)
         {
             _repository = repository;
-            _db = db;
             _hubContext = hubContext;
         }
 
@@ -44,7 +42,7 @@ namespace ServerBlazor.Server.Controllers
         [HttpGet("getPost/{postId}")]
         public IActionResult GetPost([FromRoute] int postId)
         {
-            if (!PostExists(postId))
+            if (!_repository.PostExists(postId))
             {
                 return NotFound();
             }
@@ -67,7 +65,7 @@ namespace ServerBlazor.Server.Controllers
         [HttpGet("getUsersPosts")]
         public IActionResult GetUsersPosts([FromQuery] string username)
         {
-            if (!UserExists(username))
+            if (!_repository.UserExists(username))
             {
                 return NotFound();
             }
@@ -90,7 +88,7 @@ namespace ServerBlazor.Server.Controllers
         [HttpGet("getBlog/{blogId}")]
         public IActionResult GetBlog([FromRoute] int blogId)
         {
-            if (!BlogExists(blogId))
+            if (!_repository.BlogExists(blogId))
             {
                 return NotFound();
             }
@@ -113,7 +111,7 @@ namespace ServerBlazor.Server.Controllers
         [HttpGet("getComments/{postId}")]
         public IActionResult GetComments([FromRoute] int postId)
         {
-            if (!PostExists(postId))
+            if (!_repository.PostExists(postId))
             {
                 return NotFound();
             }
@@ -142,7 +140,7 @@ namespace ServerBlazor.Server.Controllers
         [HttpPost("newComment/{postId}")]
         public async Task<IActionResult> NewComment([FromBody][Bind("CommentText")] Comment comment, [FromRoute] int postId)
         {
-            if (!PostExists(postId))
+            if (!_repository.PostExists(postId))
             {
                 return NotFound();
             }
@@ -176,21 +174,5 @@ namespace ServerBlazor.Server.Controllers
 
             return CreatedAtAction("GetPost", new { postId = post.PostId }, post);
         }
-
-        private bool PostExists(int id)
-        {
-            return _db.Post.Any(x => x.PostId == id);
-        }
-        
-        private bool BlogExists(int id)
-        {
-            return _db.Post.Any(x => x.BlogId == id);
-        }
-
-        private bool UserExists(string username)
-        {
-            return _db.Users.Any(x => x.UserName == username);
-        }
-
     }
 }

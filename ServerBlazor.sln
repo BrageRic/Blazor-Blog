@@ -5,6 +5,10 @@ VisualStudioVersion = 17.8.34322.80
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerBlazor", "ServerBlazor\ServerBlazor.csproj", "{E8886198-DBD5-436B-B1EF-F63B69D44EC1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerBlazorTests", "ServerBlazorTests\ServerBlazorTests.csproj", "{ABB4F4CD-C179-45A4-9325-22ADA0C1FF67}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "bUnitTests", "bUnitTests\bUnitTests.csproj", "{12C1A576-2EA6-4CF7-AF06-C36C6FAE03C8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{E8886198-DBD5-436B-B1EF-F63B69D44EC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E8886198-DBD5-436B-B1EF-F63B69D44EC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E8886198-DBD5-436B-B1EF-F63B69D44EC1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABB4F4CD-C179-45A4-9325-22ADA0C1FF67}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABB4F4CD-C179-45A4-9325-22ADA0C1FF67}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABB4F4CD-C179-45A4-9325-22ADA0C1FF67}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABB4F4CD-C179-45A4-9325-22ADA0C1FF67}.Release|Any CPU.Build.0 = Release|Any CPU
+		{12C1A576-2EA6-4CF7-AF06-C36C6FAE03C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{12C1A576-2EA6-4CF7-AF06-C36C6FAE03C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{12C1A576-2EA6-4CF7-AF06-C36C6FAE03C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{12C1A576-2EA6-4CF7-AF06-C36C6FAE03C8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

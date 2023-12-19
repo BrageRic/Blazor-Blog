@@ -155,9 +155,24 @@ namespace ServerBlazor.Models
             return _db.Users.Where(x => x.UserName == username).Select(x => x.Id).FirstOrDefault();
         }
 
+        public bool PostExists(int id)
+        {
+            return _db.Post.Any(x => x.PostId == id);
+        }
+
+        public bool BlogExists(int id)
+        {
+            return _db.Post.Any(x => x.BlogId == id);
+        }
+
+        public bool UserExists(string username)
+        {
+            return _db.Users.Any(x => x.UserName == username);
+        }
         private bool TagExists(Tag tag)
         {
             return _db.Tag.Any(x => x.TagText == tag.TagText);
         }
+
     }
 }

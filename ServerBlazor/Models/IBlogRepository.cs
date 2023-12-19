@@ -22,6 +22,9 @@ namespace ServerBlazor.Models
         int BlogIdByUserId(string userId);
         Task AddTagsToPost(int postId, List<Tag> tags);
         string GetUidByUsername(string username);
+        bool PostExists(int id);
+        bool BlogExists(int id);
+        bool UserExists(string username);
     }
 
 
