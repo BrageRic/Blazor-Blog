@@ -1,0 +1,69 @@
+@attribute [TestClass]
+@inherits BunitTestContext
+@using ServerBlazor.Pages
+@using ServerBlazor.Models
+@using ServerBlazor.Models.Entities
+@using Moq
+
+@code {
+    [TestMethod]
+	public void SearchForTitle_ReturnsCorrectPosts()
+	{
+		// Arrange
+		var repoMock = new Mock<IBlogRepository>();
+		var expectedPosts = new List<Post>
+		{
+			new Post { PostId = 1, Title = "Test Post 1", Content = "content", BlogId = 1 },
+			new Post { PostId = 2, Title = "Test Post 2", Content = "content", BlogId = 1 },
+			new Post { PostId = 3, Title = "Should not be found", Content = "content", BlogId = 1 }
+		};
+		repoMock.Setup(repo => repo.GetAllPosts()).Returns(expectedPosts);
+		Services.AddSingleton(_ => repoMock.Object);
+		var cut = Render(@<Search />);
+		var inputElement = cut.Find("input");
+
+		// Act
+		inputElement.Input("Test");
+		inputElement.KeyUp("t");
+
+		// Assert
+		var links = cut.FindAll(".post-link");
+		Assert.IsTrue(links.Count() == 2);
+	}
+
+	[TestMethod]
+	public void SearchForTags_ReturnsCorrectPosts()
+	{
+		// Arrange
+		var repoMock = new Mock<IBlogRepository>();
+		var expectedPosts = new List<Post>
+		{
+			new Post { PostId = 1, Title = "Test Post 1", Content = "content", BlogId = 1, Tags = new List<Tag> 
+				{ 
+					new Tag() { TagId = 1, TagText = "BLAZOR" },
+					new Tag() { TagId = 2, TagText = "SIGNALR" }
+				}
+			},
+			new Post { PostId = 2, Title = "Test Post 2", Content = "content", BlogId = 1, Tags = new List<Tag>
+				{
+					new Tag() { TagId = 1, TagText = "BLAZOR" }
+				}
+			},
+			new Post { PostId = 3, Title = "Should not be found", Content = "content", BlogId = 1 }
+		};
+		repoMock.Setup(repo => repo.GetAllPosts()).Returns(expectedPosts);
+		Services.AddSingleton(_ => repoMock.Object);
+		var cut = Render(@<Search />);
+		var inputElement = cut.Find("input");
+		var selectElement = cut.Find("select");
+
+		// Act
+		selectElement.Change("tags");
+		inputElement.Input("blazor signalr");
+		inputElement.KeyUp("r");
+
+		// Assert
+		var links = cut.FindAll(".post-link");
+		Assert.IsTrue(links.Count() == 2);
+	}
+}
